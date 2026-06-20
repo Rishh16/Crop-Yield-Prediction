@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Sensor history — Agri IoT{% endblock %}
+{% block heading %}Sensor history{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2><span class="icon">▤</span> Last {{ history_limit }} readings</h2>
+  <p class="hint">Newest first. Table auto-refreshes every 10 seconds. Data comes from your ESP32 <code>POST /api/sensor</code>.</p>
+  <div class="table-wrap">
+    <table class="history">
+      <thead>
+        <tr>
+          <th>Time (UTC)</th>
+          <th>Moisture</th>
+          <th>Temp °C</th>
+          <th>Humidity %</th>
+        </tr>
+      </thead>
+      <tbody id="historyFullBody">
+        {% if sensor_history %}
+          {% for row in sensor_history %}
+            <tr>
+              <td>{{ row.created_at }}</td>
+              <td>{{ "%.1f"|format(row.soil_moisture) }}</td>
+              <td>{{ "%.1f"|format(row.temperature_c) }}</td>
+              <td>{{ "%.1f"|format(row.humidity_pct) }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr class="empty-row"><td colspan="4">No readings stored yet. See <a href="{{ url_for('about') }}">About</a> for how to connect hardware.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+  <p class="hint" style="margin-top:1rem;"><a href="{{ url_for('index') }}">← Back to Home</a></p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const pill = document.getElementById('livePill');
+  const pillText = document.getElementById('livePillText');
+  const url = '{{ url_for("api_sensor_history") }}?limit={{ history_limit }}';
+
+  function setLive(ok, msg) {
+    if (!pill) return;
+    pill.classList.toggle('active', ok);
+    pillText.textContent = msg;
+  }
+
+  function fmt(n) { return Number(n).toFixed(1); }
+  function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  async function refreshTable() {
+    try {
+      const r = await fetch(url);
+      const j = await r.json();
+      if (!j.ok || !j.rows) {
+        setLive(false, 'History: unavailable');
+        return;
+      }
+      const tb = document.getElementById('historyFullBody');
+      if (!tb) return;
+      if (!j.rows.length) {
+        tb.innerHTML = '<tr class="empty-row"><td colspan="4">No readings yet.</td></tr>';
+        setLive(false, 'Sensors: no data');
+        return;
+      }
+      tb.innerHTML = j.rows.map(function (row) {
+        return '<tr><td>' + escapeHtml(row.created_at) + '</td><td>' + fmt(row.soil_moisture) + '</td><td>' + fmt(row.temperature_c) + '</td><td>' + fmt(row.humidity_pct) + '</td></tr>';
+      }).join('');
+      setLive(true, 'History: live');
+    } catch (e) {
+      setLive(false, 'History: offline');
+    }
+  }
+
+  refreshTable();
+  setInterval(refreshTable, 10000);
+})();
+</script>
+{% endblock %}

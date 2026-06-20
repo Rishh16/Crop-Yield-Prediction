@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Home — IOT BASED CROP YIELD PREDICTION DASHBOARD{% endblock %}
+{% block heading %}IOT BASED CROP YIELD PREDICTION DASHBOARD{% endblock %}
+
+{% block live_pill %}{% endblock %}
+
+{% block content %}
+<section class="landing-hero">
+  <div class="landing-left">
+    <h2>Smart Crop Selection for Better Harvest</h2>
+    <p>
+      Our website gives recommendations to improve farm planning based on season,
+      cultivated area, and field conditions from your IoT sensors.
+    </p>
+    <div class="landing-actions">
+      <a href="{{ url_for('dashboard') }}" class="btn-cta btn-cta-primary">Get Started</a>
+      <a href="{{ url_for('about') }}" class="btn-cta btn-cta-secondary">Learn More</a>
+    </div>
+  </div>
+  <div class="landing-right">
+    <div class="feature-tile">
+      <span class="feature-icon icon-growth">🌱</span>
+      <span class="feature-label">Optimal Growth</span>
+    </div>
+    <div class="feature-tile">
+      <span class="feature-icon icon-water">💧</span>
+      <span class="feature-label">Water Usage</span>
+    </div>
+    <div class="feature-tile">
+      <span class="feature-icon icon-climate">☀</span>
+      <span class="feature-label">Climate Data</span>
+    </div>
+    <div class="feature-tile">
+      <span class="feature-icon icon-farm">🚜</span>
+      <span class="feature-label">Farming Tips</span>
+    </div>
+  </div>
+</section>
+
+<section class="card landing-info" style="margin-top:1.25rem;">
+  <h2>How CropPredict Works</h2>
+  <div class="landing-info-grid">
+    <div class="landing-info-item">
+      <div class="step-num">1</div>
+      <h3>Soil Analysis</h3>
+      <p>We analyze soil health and quality to determine which crops will thrive.</p>
+    </div>
+    <div class="landing-info-item">
+      <div class="step-num">2</div>
+      <h3>Climate Matching</h3>
+      <p>Climate patterns are matched with crop needs for optimal growing conditions.</p>
+    </div>
+    <div class="landing-info-item">
+      <div class="step-num">3</div>
+      <h3>Smart Recommendations</h3>
+      <p>You receive crop suggestions with suitability percentages for your selected season.</p>
+    </div>
+</section>
+{% endblock %}
+

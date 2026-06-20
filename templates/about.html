@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}About — Agri IoT{% endblock %}
+{% block heading %}About Crop Prediction{% endblock %}
+
+{% block content %}
+<section class="card about-hero">
+  <div class="about-hero-icon-wrap">
+    <div class="about-hero-icon">
+      <span>🌿</span>
+    </div>
+  </div>
+  <div class="about-hero-content">
+    <h2>What It Does</h2>
+    <p>
+      This dashboard supports crop planning by combining <strong>season and land area inputs</strong> with
+      machine learning predictions derived from historical agricultural data.
+    </p>
+    <p>
+      It also integrates <strong>real-time field telemetry</strong> from ESP32/Arduino devices (soil moisture,
+      temperature, humidity) for monitoring and decision support.
+    </p>
+    <p>
+      Outputs are presented as <strong>crop suitability percentages</strong> to help farmers quickly identify
+      promising crop options for the selected season.
+    </p>
+  </div>
+</section>
+
+<section class="card about-steps">
+  <h2>How It Works</h2>
+  <div class="about-steps-grid">
+    <article class="about-step">
+      <div class="step-num">1</div>
+      <h3>Enter Inputs</h3>
+      <p>Select season and enter cultivated area in acres. Sensor values can stream automatically from IoT hardware.</p>
+    </article>
+    <article class="about-step">
+      <div class="step-num">2</div>
+      <h3>Model Processing</h3>
+      <p>The backend evaluates crop options using trained ML models and computes normalized suitability percentages.</p>
+    </article>
+    <article class="about-step">
+      <div class="step-num">3</div>
+      <h3>Recommendation Output</h3>
+      <p>The dashboard returns the best crop for the season and additional crop percentages for comparison.</p>
+    </article>
+  </div>
+</section>
+{% endblock %}
+
+{% block live_pill %}{% endblock %}

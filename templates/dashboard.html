@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Crop Prediction{% endblock %}
+{% block heading %}IOT BASED CROP YIELD PREDICTION DASHBOARD{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h2><span class="icon">◎</span> <strong>FIELD SENSORS (LIVE)</strong></h2>
+  <div class="metrics" id="sensorMetrics">
+    <div class="metric">
+      <div class="label">Soil moisture</div>
+      <div class="value" id="mMoisture">—</div>
+      <div class="unit" id="uMoisture"></div>
+    </div>
+    <div class="metric">
+      <div class="label">Temperature</div>
+      <div class="value" id="mTemp">—</div>
+      <div class="unit" id="uTemp">°C</div>
+    </div>
+    <div class="metric">
+      <div class="label">Air humidity</div>
+      <div class="value" id="mHum">—</div>
+      <div class="unit" id="uHum">%</div>
+    </div>
+  </div>
+  <p class="hint" id="sensorTime"></p>
+</section>
+
+<section class="card" style="margin-top: 1.25rem;">
+  <h2><span class="icon">◆</span> <strong>CROP YIELD PREDICTION</strong></h2>
+  <form method="post" action="{{ url_for('dashboard') }}" class="form-grid">
+    <label for="season">Season</label>
+    <select name="season" id="season" required>
+      {% for s in seasons %}
+        <option value="{{ s }}" {% if s == selected_season %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="area">Cultivated area (in acres)</label>
+    <input type="text" id="area" name="area" value="{{ area }}" placeholder="e.g. 2 acres" autocomplete="off" required>
+
+    <button type="submit" class="btn-primary"><strong>PREDICT</strong></button>
+  </form>
+
+  {% if error %}
+    <p class="err">{{ error }}</p>
+  {% endif %}
+
+  {% if best_crop is not none and best_yield is not none and not error %}
+  <canvas id="yieldChart" style="margin-top:20px;"></canvas>
+    <div class="ok">
+      <p><strong>Best crop for this season:</strong> {{ best_crop }}</p>
+      <p><strong>Predicted percentage:</strong> {{ "%.2f"|format(best_yield) }}%</p>
+      {% if other_crops %}
+        <div class="top-list">
+          <strong>Other crops (predicted percentage)</strong>
+          <ol>
+            {% for name, pct in other_crops %}
+              <li>{{ name }} — {{ "%.2f"|format(pct) }}%</li>
+            {% endfor %}
+          </ol>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const labels = {{ graph_labels | tojson | safe }};
+  const data = {{ graph_values | tojson | safe }};
+
+  if (labels && labels.length > 0) {
+    const ctx = document.getElementById('yieldChart');
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Predicted Yield',
+          data: data
+        }]
+      }
+    });
+  }
+
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const pill = document.getElementById('livePill');
+  const pillText = document.getElementById('livePillText');
+
+  function setLive(ok, msg) {
+    if (pill && pillText) {
+      pill.classList.toggle('active', ok);
+      pillText.textContent = msg;
+    }
+  }
+
+  async function poll() {
+    try {
+      const r = await fetch('/api/sensor/latest');  // ✅ fixed
+      const j = await r.json();
+
+      if (!j.ok || !j.data) {
+        setLive(false, 'Sensors: no data yet');
+        document.getElementById('sensorTime').textContent = '';
+        return;
+      }
+
+      const d = j.data;
+
+      document.getElementById('mMoisture').textContent = Number(d.soil_moisture || 0).toFixed(1);
+      document.getElementById('uMoisture').textContent = '% or raw per your sensor';
+
+      document.getElementById('mTemp').textContent = Number(d.temperature_c || 0).toFixed(1);
+      document.getElementById('mHum').textContent = Number(d.humidity_pct || 0).toFixed(1);
+
+      document.getElementById('sensorTime').textContent = 'Last reading: ' + d.created_at;
+
+      setLive(true, 'Sensors: live');
+
+    } catch (e) {
+      console.log(e);
+      setLive(false, 'Sensors: offline');
+    }
+  }
+
+  poll();
+  setInterval(poll, 5000); // 40 sec
+
+});
+</script>
+{% endblock %}
